@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Quote } from '../entity/quote/quote.entity';
 import { QuoteRepository } from '../repository/quote/quote.repository';
 import { CreateQuoteDto } from './dto/create-quote.dto';
@@ -27,7 +31,13 @@ export class QuoteService {
     return await this.quoteRepository.save(quote);
   }
 
-  async findAllQuotes(filters, order, pagination): Promise<Quote[]> {
+  async findAllQuotes(
+    filters,
+    order,
+    pagination,
+    user: User,
+  ): Promise<Quote[]> {
+    filters.where['createdBy'] = user.id;
     return await this.quoteRepository.find({
       ...filters,
       ...order,
@@ -35,11 +45,10 @@ export class QuoteService {
     });
   }
 
-  async findOneQuote(id: number): Promise<Quote> {
+  async findOneQuote(id: number, user: User): Promise<Quote> {
     try {
-      return await this.quoteRepository.findOneOrFail(id, {
-        relations: ['category', 'createdBy'],
-      });
+      const quote = await this.checkIfQuoteBelongsToUser(id, user.id);
+      return quote;
     } catch (error) {
       throw new NotFoundException();
     }
@@ -48,13 +57,22 @@ export class QuoteService {
   async editQuote(
     id: number,
     editQuoteDto: EditQuoteDto,
+    user: User,
   ): Promise<UpdateResult> {
-    return await this.quoteRepository.update(id, editQuoteDto);
+    await this.checkIfQuoteBelongsToUser(id, user.id);
+    const quote: Quote = new Quote(editQuoteDto);
+    if (quote.title) {
+      quote.slug = await this.helperService.generateSlug(quote.title);
+    }
+    return await this.quoteRepository.update(id, quote);
   }
 
-  async disableQuote(id: number): Promise<DeleteResult | UpdateResult> {
+  async disableQuote(
+    id: number,
+    user: User,
+  ): Promise<DeleteResult | UpdateResult> {
     try {
-      const quote = await this.quoteRepository.findOneOrFail(id);
+      const quote = await this.checkIfQuoteBelongsToUser(id, user.id);
       if (quote.isDeleted) {
         return await this.quoteRepository.delete(id);
       } else {
@@ -64,5 +82,18 @@ export class QuoteService {
     } catch (error) {
       throw new NotFoundException();
     }
+  }
+
+  async checkIfQuoteBelongsToUser(
+    quoteId: number,
+    userId: number,
+  ): Promise<Quote> {
+    const quote = await this.quoteRepository.findOneOrFail(quoteId, {
+      relations: ['createdBy'],
+    });
+    if (quote.createdBy.id !== userId) {
+      throw new ForbiddenException();
+    }
+    return quote;
   }
 }

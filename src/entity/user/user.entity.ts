@@ -38,6 +38,7 @@ export class User {
 
   @OneToMany(() => Quote, (quote) => quote.createdBy)
   quotes: Quote[];
+
   // toJSON() {
   //   delete this.password;
   //   delete this.salt;

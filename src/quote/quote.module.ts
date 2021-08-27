@@ -4,19 +4,17 @@ import { QuoteController } from './quote.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Quote } from '../entity/quote/quote.entity';
 import { HelperService } from '../common/helper.service';
-import { SlugService } from '../slug/slug.service';
-import { Slug } from '../entity/slug/slug.entity';
 import { PaginationService } from '../common/pagination.service';
 import { FilterService } from '../common/filter.service';
 import { OrderService } from '../common/order.service';
 import { AuthModule } from '../auth/auth.module';
+import { SlugModule } from '../slug/slug.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Quote, Slug]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Quote]), SlugModule, AuthModule],
   providers: [
     QuoteService,
     HelperService,
-    SlugService,
     FilterService,
     OrderService,
     PaginationService,

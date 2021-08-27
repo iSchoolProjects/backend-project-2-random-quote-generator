@@ -1,30 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Category } from '../../entity/category/category.entity';
 import { IsNotEmpty, IsOptional } from 'class-validator';
+import { Category } from '../../../entity/category/category.entity';
+import { User } from '../../../entity/user/user.entity';
 
-export class EditQuoteDto {
+export class AdminCreateQuoteDto {
   @ApiProperty()
-  @IsOptional()
-  @IsNotEmpty()
-  title: string;
-
-  @ApiProperty()
-  @IsOptional()
   @IsNotEmpty()
   content: string;
 
   @ApiProperty()
-  @IsOptional()
+  @IsNotEmpty()
+  title: string;
+
+  @ApiProperty()
   @IsNotEmpty()
   author: string;
 
   @ApiProperty()
-  @IsOptional()
   @IsNotEmpty()
   category: Category;
 
   @ApiProperty()
   @IsOptional()
-  @IsNotEmpty()
-  isDeleted: boolean;
+  createdBy: User;
 }

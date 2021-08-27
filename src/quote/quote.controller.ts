@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -8,6 +9,7 @@ import {
   Put,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { QuoteService } from './quote.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
@@ -27,6 +29,8 @@ import { User } from '../entity/user/user.entity';
 
 @Controller('quotes')
 @ApiTags('Quote endpoints')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class QuoteController {
   constructor(
     private readonly quoteService: QuoteService,
@@ -36,8 +40,6 @@ export class QuoteController {
   ) {}
 
   @Post()
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   createQuote(
     @Body() createQuoteDto: CreateQuoteDto,
     @GetUser() user: User,
@@ -46,8 +48,6 @@ export class QuoteController {
   }
 
   @Get()
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   async findAllQuotes(
     @Query() filterDto: FilterDto,
     @Query() orderDto: OrderDto,
@@ -55,7 +55,6 @@ export class QuoteController {
     @GetUser() user: User,
   ): Promise<{ data: Quote[]; pagination: { page: number; perPage: number } }> {
     const filters = this.filterService.setFilters(filterDto);
-    filters.where['createdBy'] = user.id;
     const order = this.orderService.setOrder(orderDto);
     const pagination = this.paginationService.setPagination(paginationDto);
 
@@ -63,6 +62,7 @@ export class QuoteController {
       filters,
       order,
       pagination,
+      user,
     );
 
     return {
@@ -74,21 +74,26 @@ export class QuoteController {
     };
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
-  findOneQuote(@Param('id') id: number): Promise<Quote> {
-    return this.quoteService.findOneQuote(id);
+  findOneQuote(@Param('id') id: number, @GetUser() user: User): Promise<Quote> {
+    return this.quoteService.findOneQuote(id, user);
   }
 
   @Put(':id')
   editQuote(
     @Param('id') id: number,
     @Body() editQuoteDto: EditQuoteDto,
+    @GetUser() user: User,
   ): Promise<UpdateResult> {
-    return this.quoteService.editQuote(id, editQuoteDto);
+    return this.quoteService.editQuote(id, editQuoteDto, user);
   }
 
   @Delete(':id')
-  disableQuote(@Param('id') id: number): Promise<DeleteResult | Quote> {
-    return this.quoteService.disableQuote(id);
+  disableQuote(
+    @Param('id') id: number,
+    @GetUser() user: User,
+  ): Promise<DeleteResult | Quote> {
+    return this.quoteService.disableQuote(id, user);
   }
 }
