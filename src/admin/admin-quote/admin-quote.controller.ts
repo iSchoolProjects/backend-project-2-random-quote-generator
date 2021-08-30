@@ -23,9 +23,10 @@ import { AdminCreateQuoteDto } from './dto/admin-create-quote.dto';
 import { AdminEditQuoteDto } from './dto/admin-edit-quote.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
 import { RoleGuard } from '../../auth/guards/role.guard';
+import { AdminCreateMultipleQuotesDto } from './dto/admin-create-multiple-quotes.dto';
 
 @ApiBearerAuth()
-@ApiTags('Admin quot endpoints')
+@ApiTags('Admin quote endpoints')
 @Controller('admin/quotes')
 @UseGuards(JwtAuthGuard, RoleGuard)
 export class AdminQuoteController {
@@ -62,6 +63,11 @@ export class AdminQuoteController {
   }
 
   @Get(':id')
+  async findQuote(@Param('id') id: number): Promise<Quote> {
+    return await this.adminQuoteService.findQuote(id);
+  }
+
+  @Get('/user/:id')
   async findQuotesByUser(@Param('id') id: number): Promise<Quote[]> {
     return await this.adminQuoteService.findQuotesByUser(id);
   }
@@ -71,6 +77,15 @@ export class AdminQuoteController {
     @Body() adminCreateQuoteDto: AdminCreateQuoteDto,
   ): Promise<Quote> {
     return await this.adminQuoteService.createQuote(adminCreateQuoteDto);
+  }
+
+  @Post('multiple')
+  async createMultipleQuotes(
+    @Body() adminCreateMultipleQuotesDto: AdminCreateMultipleQuotesDto,
+  ) {
+    return await this.adminQuoteService.createMultipleQuotes(
+      adminCreateMultipleQuotesDto,
+    );
   }
 
   @Put(':id')

@@ -10,12 +10,10 @@ import { DeleteResult, UpdateResult } from 'typeorm';
 import { EditQuoteDto } from './dto/edit-quote.dto';
 import { HelperService } from '../common/helper.service';
 import { User } from '../entity/user/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class QuoteService {
   constructor(
-    @InjectRepository(Quote)
     private quoteRepository: QuoteRepository,
     private helperService: HelperService,
   ) {}
@@ -37,18 +35,17 @@ export class QuoteService {
     pagination,
     user: User,
   ): Promise<Quote[]> {
-    filters.where['createdBy'] = user.id;
-    return await this.quoteRepository.find({
-      ...filters,
-      ...order,
-      ...pagination,
-    });
+    return await this.quoteRepository.findQuotesForUser(
+      filters,
+      order,
+      pagination,
+      user,
+    );
   }
 
   async findOneQuote(id: number, user: User): Promise<Quote> {
     try {
-      const quote = await this.checkIfQuoteBelongsToUser(id, user.id);
-      return quote;
+      return await this.checkIfQuoteBelongsToUser(id, user.id);
     } catch (error) {
       throw new NotFoundException();
     }

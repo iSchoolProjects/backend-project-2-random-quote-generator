@@ -5,9 +5,8 @@ import { OrderDto } from './dto/order.dto';
 export class OrderService {
   setOrder({ orderBy = 'createdAt', orderType = 'DESC' }: OrderDto) {
     return {
-      order: {
-        [orderBy]: orderType,
-      },
+      orderBy,
+      orderType,
     };
   }
 }

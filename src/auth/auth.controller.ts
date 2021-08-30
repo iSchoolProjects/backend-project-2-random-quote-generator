@@ -1,12 +1,4 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Post,
-  Req,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../entity/user/user.entity';
@@ -25,7 +17,6 @@ export class AuthController {
     return this.authService.register(createUserDto);
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Post('login')
   async login(@Body() loginCredentialsDto: LoginCredentialsDto): Promise<{
     user: User;

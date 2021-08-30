@@ -74,7 +74,6 @@ export class QuoteController {
     };
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   findOneQuote(@Param('id') id: number, @GetUser() user: User): Promise<Quote> {
     return this.quoteService.findOneQuote(id, user);

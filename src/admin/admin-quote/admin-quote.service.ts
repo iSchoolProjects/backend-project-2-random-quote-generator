@@ -13,6 +13,8 @@ import { AdminCreateQuoteDto } from './dto/admin-create-quote.dto';
 import { HelperService } from '../../common/helper.service';
 import { UserRole } from '../../enum/user-role.enum';
 import { AdminEditQuoteDto } from './dto/admin-edit-quote.dto';
+import { AdminCreateMultipleQuotesDto } from './dto/admin-create-multiple-quotes.dto';
+import { log } from 'util';
 
 @Injectable()
 export class AdminQuoteService {
@@ -26,10 +28,22 @@ export class AdminQuoteService {
 
   async findAllQuotes(filters, order, pagination): Promise<Quote[]> {
     return await this.quoteRepository.find({
-      ...filters,
-      ...order,
+      where: {
+        ...filters,
+      },
+      order: {
+        [order.orderBy]: order.orderType,
+      },
       ...pagination,
     });
+  }
+
+  async findQuote(id: number): Promise<Quote> {
+    try {
+      return await this.quoteRepository.findOneOrFail(id);
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 
   async findQuotesByUser(userId: number): Promise<Quote[]> {
@@ -52,6 +66,12 @@ export class AdminQuoteService {
     quote.slug = await this.helperService.generateSlug(quote.title);
 
     return await this.quoteRepository.save(quote);
+  }
+
+  async createMultipleQuotes(
+    adminCreateMultipleQuotesDto: AdminCreateMultipleQuotesDto,
+  ) {
+    adminCreateMultipleQuotesDto.quotes.forEach((quote) => console.log(quote));
   }
 
   async editQuote(
