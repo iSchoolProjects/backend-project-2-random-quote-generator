@@ -11,12 +11,16 @@ import { HelperService } from '../common/helper.service';
 import { EditUserDto } from './dto/edit-user.dto';
 import { UpdateResult } from 'typeorm';
 import { Quote } from '../entity/quote/quote.entity';
+import { UserPhoto } from '../entity/user-photo/user-photo.entity';
+import { UserPhotoRepository } from '../repository/user-photo/user-photo.repository';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: UserRepository,
+    @InjectRepository(UserPhoto)
+    private userPhotoRepository: UserPhotoRepository,
     private readonly helperService: HelperService,
   ) {}
 
@@ -43,6 +47,14 @@ export class UserService {
     user.salt = salt;
 
     return await this.userRepository.update(user.id, user);
+  }
+
+  async uploadPhoto(photo: Express.Multer.File, user: User) {
+    const userPhoto: UserPhoto = new UserPhoto({
+      photo: photo.filename,
+      user: user,
+    });
+    await this.userPhotoRepository.save(userPhoto);
   }
 
   async findUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
