@@ -67,7 +67,7 @@ export class AdminQuoteController {
     return await this.adminQuoteService.findQuote(id);
   }
 
-  @Get('/user/:id')
+  @Get('user/:id')
   async findQuotesByUser(@Param('id') id: number): Promise<Quote[]> {
     return await this.adminQuoteService.findQuotesByUser(id);
   }
@@ -94,6 +94,11 @@ export class AdminQuoteController {
     @Body() adminEditQuoteDto: AdminEditQuoteDto,
   ): Promise<UpdateResult> {
     return await this.adminQuoteService.editQuote(id, adminEditQuoteDto);
+  }
+
+  @Delete('multiple')
+  async disableMultipleQuotes(@Body() ids: number[]): Promise<void> {
+    return await this.adminQuoteService.disableMultipleQuotes(ids);
   }
 
   @Delete(':id')

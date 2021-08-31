@@ -110,6 +110,12 @@ export class AdminQuoteService {
     }
   }
 
+  async disableMultipleQuotes(ids: number[]): Promise<void> {
+    for (const id of ids) {
+      await this.disableQuote(id);
+    }
+  }
+
   async checkIfUserExistsAndIsAdmin(user: User): Promise<void> {
     const userCheck: User = await this.userRepository.findOne(user);
     if (!userCheck) {
