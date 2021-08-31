@@ -14,7 +14,6 @@ import { HelperService } from '../../common/helper.service';
 import { UserRole } from '../../enum/user-role.enum';
 import { AdminEditQuoteDto } from './dto/admin-edit-quote.dto';
 import { AdminCreateMultipleQuotesDto } from './dto/admin-create-multiple-quotes.dto';
-import { log } from 'util';
 
 @Injectable()
 export class AdminQuoteService {
@@ -70,8 +69,15 @@ export class AdminQuoteService {
 
   async createMultipleQuotes(
     adminCreateMultipleQuotesDto: AdminCreateMultipleQuotesDto,
-  ) {
-    adminCreateMultipleQuotesDto.quotes.forEach((quote) => console.log(quote));
+  ): Promise<Quote[]> {
+    for (const quote of adminCreateMultipleQuotesDto.quotes) {
+      await this.checkIfUserExistsAndIsAdmin(quote.createdBy);
+    }
+    for (const quote of adminCreateMultipleQuotesDto.quotes) {
+      quote['slug'] = await this.helperService.generateSlug(quote.title);
+    }
+
+    return await this.quoteRepository.save(adminCreateMultipleQuotesDto.quotes);
   }
 
   async editQuote(
@@ -104,7 +110,7 @@ export class AdminQuoteService {
     }
   }
 
-  async checkIfUserExistsAndIsAdmin(user: User) {
+  async checkIfUserExistsAndIsAdmin(user: User): Promise<void> {
     const userCheck: User = await this.userRepository.findOne(user);
     if (!userCheck) {
       throw new NotFoundException();

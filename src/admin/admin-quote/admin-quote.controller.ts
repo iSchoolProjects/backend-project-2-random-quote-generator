@@ -82,7 +82,7 @@ export class AdminQuoteController {
   @Post('multiple')
   async createMultipleQuotes(
     @Body() adminCreateMultipleQuotesDto: AdminCreateMultipleQuotesDto,
-  ) {
+  ): Promise<Quote[]> {
     return await this.adminQuoteService.createMultipleQuotes(
       adminCreateMultipleQuotesDto,
     );
