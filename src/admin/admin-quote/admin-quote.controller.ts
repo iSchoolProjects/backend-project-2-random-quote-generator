@@ -24,6 +24,7 @@ import { AdminEditQuoteDto } from './dto/admin-edit-quote.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
 import { RoleGuard } from '../../auth/guards/role.guard';
 import { AdminCreateMultipleQuotesDto } from './dto/admin-create-multiple-quotes.dto';
+import { AdminEditMultipleQuotesDto } from './dto/admin-edit-multiple-quotes.dto';
 
 @ApiBearerAuth()
 @ApiTags('Admin quote endpoints')
@@ -85,6 +86,15 @@ export class AdminQuoteController {
   ): Promise<Quote[]> {
     return await this.adminQuoteService.createMultipleQuotes(
       adminCreateMultipleQuotesDto,
+    );
+  }
+
+  @Put('multiple')
+  async editMultipleQuotes(
+    @Body() adminEditMultipleQuotesDto: AdminEditMultipleQuotesDto,
+  ): Promise<void> {
+    return await this.adminQuoteService.editMultipleQuotes(
+      adminEditMultipleQuotesDto,
     );
   }
 

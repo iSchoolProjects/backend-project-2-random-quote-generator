@@ -14,6 +14,7 @@ import { HelperService } from '../../common/helper.service';
 import { UserRole } from '../../enum/user-role.enum';
 import { AdminEditQuoteDto } from './dto/admin-edit-quote.dto';
 import { AdminCreateMultipleQuotesDto } from './dto/admin-create-multiple-quotes.dto';
+import { AdminEditMultipleQuotesDto } from './dto/admin-edit-multiple-quotes.dto';
 
 @Injectable()
 export class AdminQuoteService {
@@ -39,7 +40,9 @@ export class AdminQuoteService {
 
   async findQuote(id: number): Promise<Quote> {
     try {
-      return await this.quoteRepository.findOneOrFail(id);
+      return await this.quoteRepository.findOneOrFail(id, {
+        relations: ['createdBy'],
+      });
     } catch (error) {
       throw new NotFoundException();
     }
@@ -78,6 +81,16 @@ export class AdminQuoteService {
     }
 
     return await this.quoteRepository.save(adminCreateMultipleQuotesDto.quotes);
+  }
+
+  async editMultipleQuotes(
+    adminEditMultipleQuotesDto: AdminEditMultipleQuotesDto,
+  ): Promise<void> {
+    for (const id of adminEditMultipleQuotesDto.ids) {
+      const quote: Quote = await this.findQuote(id);
+      quote.createdBy.id = adminEditMultipleQuotesDto.createdBy;
+      await this.quoteRepository.update(id, quote);
+    }
   }
 
   async editQuote(
