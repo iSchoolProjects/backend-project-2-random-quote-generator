@@ -3,7 +3,7 @@ import {
   Controller,
   Post,
   Put,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -14,9 +14,9 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import { UpdateResult } from 'typeorm';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { FileUploadDto } from './dto/file-upload.dto';
-import multerConfig from '../config/multer.config';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { FilesUploadDto } from './dto/files-upload.dto';
+import getMulterConfig from '../config/multer.config';
 
 @Controller('users')
 @ApiTags('User endpoints')
@@ -34,14 +34,16 @@ export class UserController {
     return this.userService.editUser(editUserDto, user);
   }
 
-  @Post('photo')
-  @UseInterceptors(FileInterceptor('photo', multerConfig))
+  @Post('photos')
+  @UseInterceptors(
+    FilesInterceptor('photos', 10, getMulterConfig('user-photos')),
+  )
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: FileUploadDto })
-  async uploadPhoto(
-    @UploadedFile() photo: Express.Multer.File,
+  @ApiBody({ type: FilesUploadDto })
+  async uploadPhotos(
+    @UploadedFiles() photos: Array<Express.Multer.File>,
     @GetUser() user: User,
   ) {
-    return await this.userService.uploadPhoto(photo, user);
+    return await this.userService.uploadPhotos(photos, user);
   }
 }

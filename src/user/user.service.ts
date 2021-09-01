@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -49,12 +50,18 @@ export class UserService {
     return await this.userRepository.update(user.id, user);
   }
 
-  async uploadPhoto(photo: Express.Multer.File, user: User) {
-    const userPhoto: UserPhoto = new UserPhoto({
-      photo: photo.filename,
-      user: user,
-    });
-    await this.userPhotoRepository.save(userPhoto);
+  async uploadPhotos(photos: Array<Express.Multer.File>, user: User) {
+    try {
+      for (const photo of photos) {
+        const userPhoto: UserPhoto = new UserPhoto({
+          photo: photo.filename,
+          user: user,
+        });
+        await this.userPhotoRepository.save(userPhoto);
+      }
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 
   async findUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {

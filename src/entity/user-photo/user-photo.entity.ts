@@ -15,4 +15,7 @@ export class UserPhoto {
 
   @ManyToOne(() => User)
   user: User;
+
+  @Column({ default: null })
+  profilePhoto: number;
 }
