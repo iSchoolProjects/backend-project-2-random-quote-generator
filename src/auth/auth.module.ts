@@ -17,7 +17,7 @@ import { UserModule } from '../user/user.module';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
-        expiresIn: 3600,
+        expiresIn: Number(process.env.JWT_EXPIRE),
       },
     }),
     TypeOrmModule.forFeature([User, Slug]),

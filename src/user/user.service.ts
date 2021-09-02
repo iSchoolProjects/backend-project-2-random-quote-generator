@@ -67,7 +67,7 @@ export class UserService {
   }
 
   async setProfilePhoto(id: number, user: User): Promise<void> {
-    const photo: UserPhoto = await this.getPhotoIfPhotoBelongsToUser(id, user);
+    const photo: UserPhoto = await this.getPhoto(id, user);
     try {
       user.profilePhoto = photo;
       await this.userRepository.update(user.id, user);
@@ -86,19 +86,16 @@ export class UserService {
     }
   }
 
-  async getPhotoIfPhotoBelongsToUser(
-    photoId: number,
-    user: User,
-  ): Promise<UserPhoto> {
-    const userPhoto: UserPhoto = await this.userPhotoRepository.findOneOrFail(
-      photoId,
-      {
-        relations: ['user'],
-      },
-    );
-    if (userPhoto.user.id !== user.id) {
-      throw new BadRequestException();
+  async getPhoto(photoId: number, user: User): Promise<UserPhoto> {
+    try {
+      return await this.userPhotoRepository.findOneOrFail({
+        where: {
+          id: photoId,
+          user: user,
+        },
+      });
+    } catch (error) {
+      throw new NotFoundException();
     }
-    return userPhoto;
   }
 }

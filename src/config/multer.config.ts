@@ -6,7 +6,7 @@ import * as path from 'path';
 import { BadRequestException } from '@nestjs/common';
 import * as fs from 'fs';
 
-const setDestination = (dest: string): MulterOptions => {
+const getMulterConfig = (dest: string): MulterOptions => {
   return {
     storage: diskStorage({
       destination(
@@ -15,7 +15,7 @@ const setDestination = (dest: string): MulterOptions => {
         callback: (error: Error | null, destination: string) => void,
       ) {
         const userId = req.user['id'];
-        const destination = `./uploads/${dest}/${userId}`;
+        const destination = `.${process.env.PHOTOS_DEST}${dest}/${userId}`;
         fs.mkdir(destination, function (error) {});
         callback(null, destination);
       },
@@ -46,4 +46,4 @@ const setDestination = (dest: string): MulterOptions => {
   };
 };
 
-export default setDestination;
+export default getMulterConfig;
