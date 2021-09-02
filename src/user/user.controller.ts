@@ -16,7 +16,7 @@ import { GetUser } from '../auth/get-user.decorator';
 import { UpdateResult } from 'typeorm';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FilesUploadDto } from './dto/files-upload.dto';
-import getMulterConfig from '../config/multer.config';
+import setDestination from '../config/multer.config';
 
 @Controller('users')
 @ApiTags('User endpoints')
@@ -36,14 +36,22 @@ export class UserController {
 
   @Post('photos')
   @UseInterceptors(
-    FilesInterceptor('photos', 10, getMulterConfig('user-photos')),
+    FilesInterceptor('photos', 10, setDestination('user-photos')),
   )
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: FilesUploadDto })
   async uploadPhotos(
     @UploadedFiles() photos: Array<Express.Multer.File>,
     @GetUser() user: User,
-  ) {
+  ): Promise<void> {
     return await this.userService.uploadPhotos(photos, user);
+  }
+
+  @Post('profile-photo')
+  async setProfilePhoto(
+    @Body() id: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return await this.userService.setProfilePhoto(id, user);
   }
 }
