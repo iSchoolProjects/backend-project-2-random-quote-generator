@@ -38,7 +38,7 @@ export class UserController {
   @UseInterceptors(
     FilesInterceptor(
       'photos',
-      Number(process.env.MAX_NUM_FILES),
+      Number(process.env.MAX_NUM_OF_USER_PHOTO_FILES),
       getMulterConfig(process.env.USER_PHOTOS_DEST),
     ),
   )

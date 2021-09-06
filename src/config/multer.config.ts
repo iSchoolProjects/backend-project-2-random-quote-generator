@@ -28,7 +28,7 @@ const getMulterConfig = (dest: string): MulterOptions => {
       },
     }),
     limits: {
-      fileSize: 1000000,
+      fileSize: Number(process.env.MAX_FILE_SIZE),
     },
     fileFilter(
       req: Request,
