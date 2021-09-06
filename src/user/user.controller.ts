@@ -36,14 +36,26 @@ export class UserController {
 
   @Post('photos')
   @UseInterceptors(
-    FilesInterceptor('photos', 10, getMulterConfig('user-photos')),
+    FilesInterceptor(
+      'photos',
+      Number(process.env.MAX_NUM_OF_USER_PHOTO_FILES),
+      getMulterConfig(process.env.USER_PHOTOS_DEST),
+    ),
   )
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: FilesUploadDto })
   async uploadPhotos(
     @UploadedFiles() photos: Array<Express.Multer.File>,
     @GetUser() user: User,
-  ) {
+  ): Promise<void> {
     return await this.userService.uploadPhotos(photos, user);
+  }
+
+  @Post('profile-photo')
+  async setProfilePhoto(
+    @Body() id: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return await this.userService.setProfilePhoto(id, user);
   }
 }

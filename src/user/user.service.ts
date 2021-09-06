@@ -11,7 +11,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { HelperService } from '../common/helper.service';
 import { EditUserDto } from './dto/edit-user.dto';
 import { UpdateResult } from 'typeorm';
-import { Quote } from '../entity/quote/quote.entity';
 import { UserPhoto } from '../entity/user-photo/user-photo.entity';
 import { UserPhotoRepository } from '../repository/user-photo/user-photo.repository';
 
@@ -50,7 +49,10 @@ export class UserService {
     return await this.userRepository.update(user.id, user);
   }
 
-  async uploadPhotos(photos: Array<Express.Multer.File>, user: User) {
+  async uploadPhotos(
+    photos: Array<Express.Multer.File>,
+    user: User,
+  ): Promise<void> {
     try {
       for (const photo of photos) {
         const userPhoto: UserPhoto = new UserPhoto({
@@ -64,10 +66,33 @@ export class UserService {
     }
   }
 
+  async setProfilePhoto(id: number, user: User): Promise<void> {
+    const photo: UserPhoto = await this.getPhoto(id, user);
+    try {
+      user.profilePhoto = photo;
+      await this.userRepository.update(user.id, user);
+    } catch (error) {
+      throw new BadRequestException();
+    }
+  }
+
   async findUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
     try {
       return await this.userRepository.findOneOrFail({
         where: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+      });
+    } catch (error) {
+      throw new NotFoundException();
+    }
+  }
+
+  async getPhoto(photoId: number, user: User): Promise<UserPhoto> {
+    try {
+      return await this.userPhotoRepository.findOneOrFail({
+        where: {
+          id: photoId,
+          user: user,
+        },
       });
     } catch (error) {
       throw new NotFoundException();

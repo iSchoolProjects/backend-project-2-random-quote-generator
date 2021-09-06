@@ -4,11 +4,21 @@ import { Request } from 'express';
 import { v4 } from 'uuid';
 import * as path from 'path';
 import { BadRequestException } from '@nestjs/common';
+import * as fs from 'fs';
 
-const getMulterConfig = (folderName: string): MulterOptions => {
-  const multerConfig: MulterOptions = {
+const getMulterConfig = (dest: string): MulterOptions => {
+  return {
     storage: diskStorage({
-      destination: `./uploads/${folderName}`,
+      destination(
+        req: Request,
+        file: Express.Multer.File,
+        callback: (error: Error | null, destination: string) => void,
+      ) {
+        const userId = req.user['id'];
+        const destination = `.${process.env.PHOTOS_DEST}${dest}/${userId}`;
+        fs.mkdir(destination, function (error) {});
+        callback(null, destination);
+      },
       filename(
         req: Request,
         file: Express.Multer.File,
@@ -18,7 +28,7 @@ const getMulterConfig = (folderName: string): MulterOptions => {
       },
     }),
     limits: {
-      fileSize: 1000000,
+      fileSize: Number(process.env.MAX_FILE_SIZE),
     },
     fileFilter(
       req: Request,
@@ -34,8 +44,6 @@ const getMulterConfig = (folderName: string): MulterOptions => {
       callback(null, true);
     },
   };
-
-  return multerConfig;
 };
 
 export default getMulterConfig;
