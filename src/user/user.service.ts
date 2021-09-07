@@ -13,6 +13,7 @@ import { EditUserDto } from './dto/edit-user.dto';
 import { UpdateResult } from 'typeorm';
 import { UserPhoto } from '../entity/user-photo/user-photo.entity';
 import { UserPhotoRepository } from '../repository/user-photo/user-photo.repository';
+import { SetProfilePhotoDto } from './dto/set-profile-photo.dto';
 
 @Injectable()
 export class UserService {
@@ -66,14 +67,23 @@ export class UserService {
     }
   }
 
-  async setProfilePhoto(id: number, user: User): Promise<void> {
-    const photo: UserPhoto = await this.getPhoto(id, user);
+  async setProfilePhoto(
+    setProfilePhotoDto: SetProfilePhotoDto,
+    user: User,
+  ): Promise<void> {
+    const photo: UserPhoto = await this.getPhoto(setProfilePhotoDto.id, user);
     try {
-      user.profilePhoto = photo;
-      await this.userRepository.update(user.id, user);
+      await this.userRepository.update(user.id, { profilePhoto: photo });
     } catch (error) {
       throw new BadRequestException();
     }
+  }
+
+  async getPhotoLink(id: number, user: User): Promise<{ photo: string }> {
+    const photo: UserPhoto = await this.getPhoto(id, user);
+    return {
+      photo: `${process.env.BASE_URL}${process.env.USER_PHOTOS_DEST}/${user.id}/${photo.photo}`,
+    };
   }
 
   async findUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
