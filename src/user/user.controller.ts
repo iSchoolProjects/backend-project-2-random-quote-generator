@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Get,
+  Param,
   Post,
   Put,
   UploadedFiles,
@@ -17,6 +19,7 @@ import { UpdateResult } from 'typeorm';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FilesUploadDto } from './dto/files-upload.dto';
 import getMulterConfig from '../config/multer.config';
+import { SetProfilePhotoDto } from './dto/set-profile-photo.dto';
 
 @Controller('users')
 @ApiTags('User endpoints')
@@ -53,9 +56,17 @@ export class UserController {
 
   @Post('profile-photo')
   async setProfilePhoto(
-    @Body() id: number,
+    @Body() setProfilePhotoDto: SetProfilePhotoDto,
     @GetUser() user: User,
   ): Promise<void> {
-    return await this.userService.setProfilePhoto(id, user);
+    return await this.userService.setProfilePhoto(setProfilePhotoDto, user);
+  }
+
+  @Get('photos/:id')
+  async getPhotoLink(
+    @Param('id') id: number,
+    @GetUser() user: User,
+  ): Promise<{ photo: string }> {
+    return await this.userService.getPhotoLink(id, user);
   }
 }
