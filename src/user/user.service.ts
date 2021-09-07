@@ -73,8 +73,7 @@ export class UserService {
   ): Promise<void> {
     const photo: UserPhoto = await this.getPhoto(setProfilePhotoDto.id, user);
     try {
-      user.profilePhoto = photo;
-      await this.userRepository.update(user.id, user);
+      await this.userRepository.update(user.id, { profilePhoto: photo });
     } catch (error) {
       throw new BadRequestException();
     }
