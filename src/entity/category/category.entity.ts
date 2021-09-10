@@ -2,13 +2,11 @@ import {
   Column,
   Entity,
   ManyToOne,
-  OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 
-@Entity({ name: 'category' })
+@Entity()
 @Unique(['title'])
 export class Category {
   constructor(partial: Partial<Category>) {

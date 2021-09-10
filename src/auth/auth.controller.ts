@@ -1,11 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../entity/user/user.entity';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
-import { JwtAuthGuard } from './guards/jwt.guard';
-import { GetUser } from './get-user.decorator';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 @ApiTags('Auth endpoints')
@@ -25,10 +25,17 @@ export class AuthController {
     return await this.authService.login(loginCredentialsDto);
   }
 
-  @Post('test')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  test(@GetUser() user: User) {
-    console.log(user);
+  @Post('reset-password')
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<void> {
+    return await this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @Put('change-password')
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
+    return await this.authService.changePassword(changePasswordDto);
   }
 }
