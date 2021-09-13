@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../entity/user/user.entity';
@@ -16,6 +12,7 @@ import { UserRepository } from '../repository/user/user.repository';
 import { PasswordResetCodeRepository } from '../repository/password-reset-code/password-reset-code.repository';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { HelperService } from '../common/helper.service';
+import { ExceptionService } from '../common/exception.service';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +24,7 @@ export class AuthService {
     private jwtService: JwtService,
     private mailService: MailService,
     private helperService: HelperService,
+    private exceptionService: ExceptionService,
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -65,22 +63,25 @@ export class AuthService {
         code,
       );
     } catch (error) {
-      throw new NotFoundException();
+      this.exceptionService.throwException(error);
     }
   }
 
   async changePassword(changePasswordDto: ChangePasswordDto): Promise<void> {
     const { code, password } = changePasswordDto;
-    const user: User = await this.passwordResetCodeRepository.checkIfCodeExists(
-      code,
-    );
-    const { hash, salt } = await this.helperService.hashPassword(password);
-    await this.userRepository.update(user.id, {
-      password: hash,
-      salt,
-      passwordChangeCounter: user.passwordChangeCounter + 1,
-    });
-    await this.passwordResetCodeRepository.delete({ user });
+    let user: User;
+    try {
+      user = await this.passwordResetCodeRepository.checkIfCodeExists(code);
+      const { hash, salt } = await this.helperService.hashPassword(password);
+      await this.userRepository.update(user.id, {
+        password: hash,
+        salt,
+        passwordChangeCounter: user.passwordChangeCounter + 1,
+      });
+      await this.passwordResetCodeRepository.delete({ user });
+    } catch (error) {
+      this.exceptionService.throwException(error);
+    }
   }
 
   async checkPassword(password: string, user: User): Promise<void> {

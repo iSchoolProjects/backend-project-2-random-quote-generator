@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Quote } from '../entity/quote/quote.entity';
 import { QuoteRepository } from '../repository/quote/quote.repository';
 import { CreateQuoteDto } from './dto/create-quote.dto';
@@ -10,12 +6,14 @@ import { DeleteResult, UpdateResult } from 'typeorm';
 import { EditQuoteDto } from './dto/edit-quote.dto';
 import { HelperService } from '../common/helper.service';
 import { User } from '../entity/user/user.entity';
+import { ExceptionService } from '../common/exception.service';
 
 @Injectable()
 export class QuoteService {
   constructor(
     private quoteRepository: QuoteRepository,
     private helperService: HelperService,
+    private exceptionService: ExceptionService,
   ) {}
 
   async createQuote(
@@ -44,11 +42,7 @@ export class QuoteService {
   }
 
   async findOneQuote(id: number, user: User): Promise<Quote> {
-    try {
-      return await this.checkIfQuoteBelongsToUser(id, user.id);
-    } catch (error) {
-      throw new NotFoundException();
-    }
+    return await this.checkIfQuoteBelongsToUser(id, user.id);
   }
 
   async editQuote(
@@ -68,16 +62,13 @@ export class QuoteService {
     id: number,
     user: User,
   ): Promise<DeleteResult | UpdateResult> {
-    try {
-      const quote = await this.checkIfQuoteBelongsToUser(id, user.id);
-      if (quote.isDeleted) {
-        return await this.quoteRepository.delete(id);
-      } else {
-        quote.isDeleted = true;
-        return await this.quoteRepository.update(id, quote);
-      }
-    } catch (error) {
-      throw new NotFoundException();
+    const quote = await this.checkIfQuoteBelongsToUser(id, user.id);
+    if (quote.isDeleted) {
+      return await this.quoteRepository.delete(id);
+    } else {
+      return await this.quoteRepository.update(id, {
+        isDeleted: true,
+      });
     }
   }
 
@@ -85,9 +76,15 @@ export class QuoteService {
     quoteId: number,
     userId: number,
   ): Promise<Quote> {
-    const quote = await this.quoteRepository.findOneOrFail(quoteId, {
-      relations: ['createdBy'],
-    });
+    let quote: Quote;
+    try {
+      quote = await this.quoteRepository.findOneOrFail(quoteId, {
+        relations: ['createdBy'],
+      });
+    } catch (error) {
+      this.exceptionService.throwException(error);
+    }
+
     if (quote.createdBy.id !== userId) {
       throw new ForbiddenException();
     }

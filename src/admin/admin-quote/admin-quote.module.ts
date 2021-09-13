@@ -9,6 +9,7 @@ import { PaginationService } from '../../common/pagination.service';
 import { User } from '../../entity/user/user.entity';
 import { HelperService } from '../../common/helper.service';
 import { SlugModule } from '../../slug/slug.module';
+import { ExceptionService } from '../../common/exception.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Quote, User]), SlugModule],
@@ -18,6 +19,7 @@ import { SlugModule } from '../../slug/slug.module';
     OrderService,
     PaginationService,
     HelperService,
+    ExceptionService,
   ],
   controllers: [AdminQuoteController],
 })

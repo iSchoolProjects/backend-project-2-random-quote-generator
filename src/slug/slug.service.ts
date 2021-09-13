@@ -12,11 +12,7 @@ export class SlugService {
   ) {}
 
   async getExistingSlug(slug: string): Promise<Slug> {
-    try {
-      return await this.slugRepository.findOneOrFail({ slug });
-    } catch (e) {
-      return null;
-    }
+    return await this.slugRepository.findOne({ slug });
   }
 
   async createSlug(slug: string): Promise<Slug> {

@@ -5,7 +5,6 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-  Unique,
 } from 'typeorm';
 import { UserRole } from '../../enum/user-role.enum';
 import { Exclude } from 'class-transformer';
@@ -13,7 +12,6 @@ import { Quote } from '../quote/quote.entity';
 import { UserPhoto } from '../user-photo/user-photo.entity';
 
 @Entity()
-@Unique(['username', 'email'])
 export class User {
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
@@ -22,10 +20,10 @@ export class User {
   @PrimaryGeneratedColumn({ type: 'int', unsigned: true })
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Exclude()
@@ -48,10 +46,4 @@ export class User {
 
   @Column({ default: 0 })
   passwordChangeCounter: number;
-
-  // toJSON() {
-  //   delete this.password;
-  //   delete this.salt;
-  //   return this;
-  // }
 }

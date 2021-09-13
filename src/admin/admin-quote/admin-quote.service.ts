@@ -15,6 +15,7 @@ import { UserRole } from '../../enum/user-role.enum';
 import { AdminEditQuoteDto } from './dto/admin-edit-quote.dto';
 import { AdminCreateMultipleQuotesDto } from './dto/admin-create-multiple-quotes.dto';
 import { AdminEditMultipleQuotesDto } from './dto/admin-edit-multiple-quotes.dto';
+import { ExceptionService } from '../../common/exception.service';
 
 @Injectable()
 export class AdminQuoteService {
@@ -24,6 +25,7 @@ export class AdminQuoteService {
     @InjectRepository(User)
     private userRepository: UserRepository,
     private helperService: HelperService,
+    private exceptionService: ExceptionService,
   ) {}
 
   async findAllQuotes(filters, order, pagination): Promise<Quote[]> {
@@ -44,7 +46,7 @@ export class AdminQuoteService {
         relations: ['createdBy'],
       });
     } catch (error) {
-      throw new NotFoundException();
+      this.exceptionService.throwException(error);
     }
   }
 
@@ -55,7 +57,7 @@ export class AdminQuoteService {
       });
       return user.quotes;
     } catch (error) {
-      throw new NotFoundException();
+      this.exceptionService.throwException(error);
     }
   }
 
@@ -119,7 +121,7 @@ export class AdminQuoteService {
         return await this.quoteRepository.update(id, quote);
       }
     } catch (error) {
-      throw new NotFoundException();
+      this.exceptionService.throwException(error);
     }
   }
 
