@@ -46,6 +46,9 @@ export class User {
   @JoinColumn()
   profilePhoto: UserPhoto;
 
+  @Column({ default: 0 })
+  passwordChangeCounter: number;
+
   // toJSON() {
   //   delete this.password;
   //   delete this.salt;

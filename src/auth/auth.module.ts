@@ -10,6 +10,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { UserModule } from '../user/user.module';
+import { MailModule } from '../mail/mail.module';
+import { PasswordResetCodeRepository } from '../repository/password-reset-code/password-reset-code.repository';
 
 @Module({
   imports: [
@@ -20,8 +22,9 @@ import { UserModule } from '../user/user.module';
         expiresIn: Number(process.env.JWT_EXPIRE),
       },
     }),
-    TypeOrmModule.forFeature([User, Slug]),
+    TypeOrmModule.forFeature([User, Slug, PasswordResetCodeRepository]),
     UserModule,
+    MailModule,
   ],
   providers: [AuthService, HelperService, SlugService, JwtStrategy],
   controllers: [AuthController],
