@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Category } from '../category/category.entity';
 import { User } from '../user/user.entity';
+import { QuoteStatus } from '../../enum/quote-status.enum';
 
 @Entity({ name: 'quote' })
 export class Quote {
@@ -38,6 +39,9 @@ export class Quote {
 
   @Column({ default: '' })
   slug: string;
+
+  @Column({ default: QuoteStatus.PENDING })
+  status: QuoteStatus;
 
   @CreateDateColumn()
   createdAt: Date;

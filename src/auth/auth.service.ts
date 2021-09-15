@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../entity/user/user.entity';
@@ -44,6 +48,8 @@ export class AuthService {
 
     await this.checkPassword(password, user);
 
+    this.checkIfUserIsEnabled(user.isEnabled);
+
     const payload = { username: user.username };
     const token: string = this.jwtService.sign(payload);
 
@@ -88,6 +94,12 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, user.salt);
     if (passwordHash !== user.password) {
       throw new UnauthorizedException();
+    }
+  }
+
+  checkIfUserIsEnabled(enabled: boolean) {
+    if (!enabled) {
+      throw new ForbiddenException('Your account is disabled!');
     }
   }
 }

@@ -16,6 +16,7 @@ import { AdminEditQuoteDto } from './dto/admin-edit-quote.dto';
 import { AdminCreateMultipleQuotesDto } from './dto/admin-create-multiple-quotes.dto';
 import { AdminEditMultipleQuotesDto } from './dto/admin-edit-multiple-quotes.dto';
 import { ExceptionService } from '../../common/exception.service';
+import { QuoteStatus } from '../../enum/quote-status.enum';
 
 @Injectable()
 export class AdminQuoteService {
@@ -50,6 +51,12 @@ export class AdminQuoteService {
     }
   }
 
+  async findPendingQuotes(): Promise<Quote[]> {
+    return await this.quoteRepository.find({
+      where: { status: QuoteStatus.PENDING },
+    });
+  }
+
   async findQuotesByUser(userId: number): Promise<Quote[]> {
     try {
       const user: User = await this.userRepository.findOneOrFail(userId, {
@@ -69,20 +76,25 @@ export class AdminQuoteService {
     const quote: Quote = new Quote(adminCreateQuoteDto);
     quote.slug = await this.helperService.generateSlug(quote.title);
 
-    return await this.quoteRepository.save(quote);
+    return await this.quoteRepository.save({
+      ...quote,
+      status: QuoteStatus.APPROVED,
+    });
   }
 
   async createMultipleQuotes(
     adminCreateMultipleQuotesDto: AdminCreateMultipleQuotesDto,
   ): Promise<Quote[]> {
+    const quotes: Quote[] = [];
     for (const quote of adminCreateMultipleQuotesDto.quotes) {
       await this.checkIfUserExistsAndIsAdmin(quote.createdBy);
     }
     for (const quote of adminCreateMultipleQuotesDto.quotes) {
       quote['slug'] = await this.helperService.generateSlug(quote.title);
+      quotes.push(new Quote({ ...quote, status: QuoteStatus.APPROVED }));
     }
 
-    return await this.quoteRepository.save(adminCreateMultipleQuotesDto.quotes);
+    return await this.quoteRepository.save(quotes);
   }
 
   async editMultipleQuotes(
@@ -98,9 +110,13 @@ export class AdminQuoteService {
   async editQuote(
     id: number,
     adminEditQuoteDto: AdminEditQuoteDto,
-  ): Promise<UpdateResult> {
+  ): Promise<UpdateResult | DeleteResult> {
     if (adminEditQuoteDto.createdBy) {
       await this.checkIfUserExistsAndIsAdmin(adminEditQuoteDto.createdBy);
+    }
+
+    if (adminEditQuoteDto.status === QuoteStatus.REJECTED) {
+      return await this.quoteRepository.delete(id);
     }
 
     const quote: Quote = new Quote(adminEditQuoteDto);

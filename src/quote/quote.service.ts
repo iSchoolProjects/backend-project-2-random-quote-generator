@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Quote } from '../entity/quote/quote.entity';
 import { QuoteRepository } from '../repository/quote/quote.repository';
 import { CreateQuoteDto } from './dto/create-quote.dto';
@@ -7,6 +7,7 @@ import { EditQuoteDto } from './dto/edit-quote.dto';
 import { HelperService } from '../common/helper.service';
 import { User } from '../entity/user/user.entity';
 import { ExceptionService } from '../common/exception.service';
+import { QuoteStatus } from '../enum/quote-status.enum';
 
 @Injectable()
 export class QuoteService {
@@ -42,7 +43,7 @@ export class QuoteService {
   }
 
   async findOneQuote(id: number, user: User): Promise<Quote> {
-    return await this.checkIfQuoteBelongsToUser(id, user.id);
+    return await this.checkIfQuoteBelongsToUser(id, user);
   }
 
   async editQuote(
@@ -50,7 +51,7 @@ export class QuoteService {
     editQuoteDto: EditQuoteDto,
     user: User,
   ): Promise<UpdateResult> {
-    await this.checkIfQuoteBelongsToUser(id, user.id);
+    await this.checkIfQuoteBelongsToUser(id, user);
     const quote: Quote = new Quote(editQuoteDto);
     if (quote.title) {
       quote.slug = await this.helperService.generateSlug(quote.title);
@@ -62,7 +63,7 @@ export class QuoteService {
     id: number,
     user: User,
   ): Promise<DeleteResult | UpdateResult> {
-    const quote = await this.checkIfQuoteBelongsToUser(id, user.id);
+    const quote = await this.checkIfQuoteBelongsToUser(id, user);
     if (quote.isDeleted) {
       return await this.quoteRepository.delete(id);
     } else {
@@ -72,22 +73,13 @@ export class QuoteService {
     }
   }
 
-  async checkIfQuoteBelongsToUser(
-    quoteId: number,
-    userId: number,
-  ): Promise<Quote> {
-    let quote: Quote;
+  async checkIfQuoteBelongsToUser(quoteId: number, user: User): Promise<Quote> {
     try {
-      quote = await this.quoteRepository.findOneOrFail(quoteId, {
-        relations: ['createdBy'],
+      return await this.quoteRepository.findOneOrFail({
+        where: { id: quoteId, createdBy: user, status: QuoteStatus.APPROVED },
       });
     } catch (error) {
       this.exceptionService.throwException(error);
     }
-
-    if (quote.createdBy.id !== userId) {
-      throw new ForbiddenException();
-    }
-    return quote;
   }
 }

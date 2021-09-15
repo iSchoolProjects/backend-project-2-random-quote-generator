@@ -1,10 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User } from '../../entity/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from '../../repository/user/user.repository';
 import { UpdateResult } from 'typeorm';
-import { UserRole } from '../../enum/user-role.enum';
 import { ExceptionService } from '../../common/exception.service';
+import { AdminEditUserDto } from './dto/admin-edit-user.dto';
 
 @Injectable()
 export class AdminUserService {
@@ -25,12 +25,12 @@ export class AdminUserService {
     }
   }
 
-  async changeRoleToAdmin(id: number): Promise<UpdateResult> {
-    const user: User = await this.findUser(id);
-    if (user.role === UserRole.ADMIN) {
-      throw new ConflictException('User is already admin.');
-    }
-    user.role = UserRole.ADMIN;
-    return await this.userRepository.update(id, user);
+  async editUser(
+    id: number,
+    adminEditUserDto: AdminEditUserDto,
+  ): Promise<UpdateResult> {
+    return await this.userRepository.update(id, {
+      ...adminEditUserDto,
+    });
   }
 }
