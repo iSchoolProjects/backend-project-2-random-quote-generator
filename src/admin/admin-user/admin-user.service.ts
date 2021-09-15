@@ -1,17 +1,17 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { User } from '../../entity/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from '../../repository/user/user.repository';
 import { UpdateResult } from 'typeorm';
 import { UserRole } from '../../enum/user-role.enum';
+import { ExceptionService } from '../../common/exception.service';
 
 @Injectable()
 export class AdminUserService {
-  constructor(@InjectRepository(User) private userRepository: UserRepository) {}
+  constructor(
+    @InjectRepository(User) private userRepository: UserRepository,
+    private exceptionService: ExceptionService,
+  ) {}
 
   async findAllUsers(): Promise<User[]> {
     return await this.userRepository.find();
@@ -21,7 +21,7 @@ export class AdminUserService {
     try {
       return await this.userRepository.findOneOrFail(id);
     } catch (error) {
-      throw new NotFoundException();
+      this.exceptionService.throwException(error);
     }
   }
 

@@ -5,12 +5,14 @@ import { Category } from '../entity/category/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { EditCategoryDto } from './dto/edit-category.dto';
+import { ExceptionService } from '../common/exception.service';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: CategoryRepository,
+    private exceptionService: ExceptionService,
   ) {}
 
   async createCategory(
@@ -29,7 +31,7 @@ export class CategoryService {
     try {
       return await this.categoryRepository.findOneOrFail(id);
     } catch (error) {
-      return error.message;
+      this.exceptionService.throwException(error);
     }
   }
 

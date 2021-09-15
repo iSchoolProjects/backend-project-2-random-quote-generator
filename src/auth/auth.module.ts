@@ -12,6 +12,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { UserModule } from '../user/user.module';
 import { MailModule } from '../mail/mail.module';
 import { PasswordResetCodeRepository } from '../repository/password-reset-code/password-reset-code.repository';
+import { ExceptionService } from '../common/exception.service';
 
 @Module({
   imports: [
@@ -26,7 +27,13 @@ import { PasswordResetCodeRepository } from '../repository/password-reset-code/p
     UserModule,
     MailModule,
   ],
-  providers: [AuthService, HelperService, SlugService, JwtStrategy],
+  providers: [
+    AuthService,
+    HelperService,
+    SlugService,
+    JwtStrategy,
+    ExceptionService,
+  ],
   controllers: [AuthController],
   exports: [JwtStrategy, PassportModule],
 })

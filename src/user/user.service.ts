@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entity/user/user.entity';
 import { UserRepository } from '../repository/user/user.repository';
@@ -14,6 +9,7 @@ import { UpdateResult } from 'typeorm';
 import { UserPhoto } from '../entity/user-photo/user-photo.entity';
 import { UserPhotoRepository } from '../repository/user-photo/user-photo.repository';
 import { SetProfilePhotoDto } from './dto/set-profile-photo.dto';
+import { ExceptionService } from '../common/exception.service';
 
 @Injectable()
 export class UserService {
@@ -22,7 +18,8 @@ export class UserService {
     private userRepository: UserRepository,
     @InjectRepository(UserPhoto)
     private userPhotoRepository: UserPhotoRepository,
-    private readonly helperService: HelperService,
+    private helperService: HelperService,
+    private exceptionService: ExceptionService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
@@ -36,7 +33,7 @@ export class UserService {
     try {
       return await this.userRepository.save(user);
     } catch (error) {
-      throw new ConflictException();
+      this.exceptionService.throwException(error);
     }
   }
 
@@ -54,16 +51,12 @@ export class UserService {
     photos: Array<Express.Multer.File>,
     user: User,
   ): Promise<void> {
-    try {
-      for (const photo of photos) {
-        const userPhoto: UserPhoto = new UserPhoto({
-          photo: photo.filename,
-          user: user,
-        });
-        await this.userPhotoRepository.save(userPhoto);
-      }
-    } catch (error) {
-      throw new BadRequestException();
+    for (const photo of photos) {
+      const userPhoto: UserPhoto = new UserPhoto({
+        photo: photo.filename,
+        user: user,
+      });
+      await this.userPhotoRepository.save(userPhoto);
     }
   }
 
@@ -72,11 +65,7 @@ export class UserService {
     user: User,
   ): Promise<void> {
     const photo: UserPhoto = await this.getPhoto(setProfilePhotoDto.id, user);
-    try {
-      await this.userRepository.update(user.id, { profilePhoto: photo });
-    } catch (error) {
-      throw new BadRequestException();
-    }
+    await this.userRepository.update(user.id, { profilePhoto: photo });
   }
 
   async getPhotoLink(id: number, user: User): Promise<{ photo: string }> {
@@ -92,7 +81,7 @@ export class UserService {
         where: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
       });
     } catch (error) {
-      throw new NotFoundException();
+      this.exceptionService.throwException(error);
     }
   }
 
@@ -105,7 +94,7 @@ export class UserService {
         },
       });
     } catch (error) {
-      throw new NotFoundException();
+      this.exceptionService.throwException(error);
     }
   }
 }

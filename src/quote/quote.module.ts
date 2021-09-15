@@ -9,6 +9,7 @@ import { OrderService } from '../common/order.service';
 import { AuthModule } from '../auth/auth.module';
 import { SlugModule } from '../slug/slug.module';
 import { QuoteRepository } from '../repository/quote/quote.repository';
+import { ExceptionService } from '../common/exception.service';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { QuoteRepository } from '../repository/quote/quote.repository';
     FilterService,
     OrderService,
     PaginationService,
+    ExceptionService,
   ],
   controllers: [QuoteController],
 })

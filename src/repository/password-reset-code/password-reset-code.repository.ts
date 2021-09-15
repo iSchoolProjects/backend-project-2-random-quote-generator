@@ -1,24 +1,16 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { PasswordResetCode } from '../../entity/password-reset-code/password-reset-code.entity';
 import { User } from '../../entity/user/user.entity';
-import {
-  ConflictException,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 
 @EntityRepository(PasswordResetCode)
 export class PasswordResetCodeRepository extends Repository<PasswordResetCode> {
   async createCode(user: User): Promise<number> {
-    try {
-      const code = Number(
-        (Math.floor(Math.random() * 10000) + 10000).toString().substring(1),
-      );
-      await this.save({ code, user });
-      return code;
-    } catch (error) {
-      throw new InternalServerErrorException();
-    }
+    const code = Number(
+      (Math.floor(Math.random() * 10000) + 10000).toString().substring(1),
+    );
+    await this.save({ code, user });
+    return code;
   }
 
   async checkIfUserHaveActiveCode(user: User): Promise<void> {
@@ -33,15 +25,14 @@ export class PasswordResetCodeRepository extends Repository<PasswordResetCode> {
   }
 
   async checkIfCodeExists(code: number): Promise<User> {
-    try {
-      const codeFromDb = await this.findOneOrFail(
-        { code },
-        { relations: ['user'] },
-      );
-      return codeFromDb.user;
-    } catch (error) {
-      throw new NotFoundException();
+    const codeFromDb = await this.findOneOrFail(
+      { code },
+      { relations: ['user'] },
+    );
+    if (this.checkIfCodeExpired(codeFromDb.createdAt)) {
+      throw new ConflictException('Your code expired. Please request new.');
     }
+    return codeFromDb.user;
   }
 
   getTimestamp(date: Date): number {
