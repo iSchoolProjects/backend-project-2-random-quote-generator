@@ -76,25 +76,20 @@ export class AdminQuoteService {
     const quote: Quote = new Quote(adminCreateQuoteDto);
     quote.slug = await this.helperService.generateSlug(quote.title);
 
-    return await this.quoteRepository.save({
-      ...quote,
-      status: QuoteStatus.APPROVED,
-    });
+    return await this.quoteRepository.save(quote);
   }
 
   async createMultipleQuotes(
     adminCreateMultipleQuotesDto: AdminCreateMultipleQuotesDto,
   ): Promise<Quote[]> {
-    const quotes: Quote[] = [];
     for (const quote of adminCreateMultipleQuotesDto.quotes) {
       await this.checkIfUserExistsAndIsAdmin(quote.createdBy);
     }
     for (const quote of adminCreateMultipleQuotesDto.quotes) {
       quote['slug'] = await this.helperService.generateSlug(quote.title);
-      quotes.push(new Quote({ ...quote, status: QuoteStatus.APPROVED }));
     }
 
-    return await this.quoteRepository.save(quotes);
+    return await this.quoteRepository.save(adminCreateMultipleQuotesDto.quotes);
   }
 
   async editMultipleQuotes(

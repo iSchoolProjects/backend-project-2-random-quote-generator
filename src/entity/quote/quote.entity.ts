@@ -40,7 +40,7 @@ export class Quote {
   @Column({ default: '' })
   slug: string;
 
-  @Column({ default: QuoteStatus.PENDING })
+  @Column({ default: QuoteStatus.APPROVED })
   status: QuoteStatus;
 
   @CreateDateColumn()

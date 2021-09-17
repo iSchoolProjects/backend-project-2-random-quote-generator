@@ -48,8 +48,6 @@ export class AuthService {
 
     await this.checkPassword(password, user);
 
-    this.checkIfUserIsEnabled(user.isEnabled);
-
     const payload = { username: user.username };
     const token: string = this.jwtService.sign(payload);
 
@@ -94,12 +92,6 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, user.salt);
     if (passwordHash !== user.password) {
       throw new UnauthorizedException();
-    }
-  }
-
-  checkIfUserIsEnabled(enabled: boolean) {
-    if (!enabled) {
-      throw new ForbiddenException('Your account is disabled!');
     }
   }
 }

@@ -22,10 +22,13 @@ export class QuoteService {
     user: User,
   ): Promise<Quote> {
     const quote: Quote = new Quote(createQuoteDto);
-    quote.createdBy = user;
     quote.slug = await this.helperService.generateSlug(quote.title);
 
-    return await this.quoteRepository.save(quote);
+    return await this.quoteRepository.save({
+      ...quote,
+      createdBy: user,
+      status: QuoteStatus.PENDING,
+    });
   }
 
   async findAllQuotes(
