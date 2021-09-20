@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { FilterDto } from './dto/filter.dto';
+import { QuoteStatus } from '../enum/quote-status.enum';
 
 @Injectable()
 export class FilterService {
   setFilters(filterDto: FilterDto) {
-    const filters = {};
+    const filters = {
+      status: QuoteStatus.APPROVED,
+    };
 
     if (!filterDto.isDeleted) {
       filterDto.isDeleted = '0';

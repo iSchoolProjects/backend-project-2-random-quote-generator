@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from '../../../entity/category/category.entity';
 import { User } from '../../../entity/user/user.entity';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { QuoteStatus } from '../../../enum/quote-status.enum';
 
 export class AdminEditQuoteDto {
   @ApiProperty()
@@ -33,4 +34,9 @@ export class AdminEditQuoteDto {
   @IsOptional()
   @IsNotEmpty()
   createdBy: User;
+
+  @ApiProperty()
+  @IsEnum(QuoteStatus)
+  @IsOptional()
+  status: QuoteStatus;
 }

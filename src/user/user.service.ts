@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entity/user/user.entity';
 import { UserRepository } from '../repository/user/user.repository';
@@ -77,9 +77,12 @@ export class UserService {
 
   async findUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
     try {
-      return await this.userRepository.findOneOrFail({
+      const user = await this.userRepository.findOneOrFail({
         where: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
       });
+      if (!user.isEnabled)
+        throw new ForbiddenException('Your account is suspended!');
+      return user;
     } catch (error) {
       this.exceptionService.throwException(error);
     }

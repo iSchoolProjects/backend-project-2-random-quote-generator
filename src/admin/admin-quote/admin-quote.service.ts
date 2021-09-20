@@ -16,6 +16,7 @@ import { AdminEditQuoteDto } from './dto/admin-edit-quote.dto';
 import { AdminCreateMultipleQuotesDto } from './dto/admin-create-multiple-quotes.dto';
 import { AdminEditMultipleQuotesDto } from './dto/admin-edit-multiple-quotes.dto';
 import { ExceptionService } from '../../common/exception.service';
+import { QuoteStatus } from '../../enum/quote-status.enum';
 
 @Injectable()
 export class AdminQuoteService {
@@ -48,6 +49,12 @@ export class AdminQuoteService {
     } catch (error) {
       this.exceptionService.throwException(error);
     }
+  }
+
+  async findPendingQuotes(): Promise<Quote[]> {
+    return await this.quoteRepository.find({
+      where: { status: QuoteStatus.PENDING },
+    });
   }
 
   async findQuotesByUser(userId: number): Promise<Quote[]> {
@@ -98,9 +105,13 @@ export class AdminQuoteService {
   async editQuote(
     id: number,
     adminEditQuoteDto: AdminEditQuoteDto,
-  ): Promise<UpdateResult> {
+  ): Promise<UpdateResult | DeleteResult> {
     if (adminEditQuoteDto.createdBy) {
       await this.checkIfUserExistsAndIsAdmin(adminEditQuoteDto.createdBy);
+    }
+
+    if (adminEditQuoteDto.status === QuoteStatus.REJECTED) {
+      return await this.quoteRepository.delete(id);
     }
 
     const quote: Quote = new Quote(adminEditQuoteDto);

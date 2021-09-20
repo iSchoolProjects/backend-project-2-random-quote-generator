@@ -63,6 +63,11 @@ export class AdminQuoteController {
     };
   }
 
+  @Get('pending')
+  async findPendingQuotes(): Promise<Quote[]> {
+    return await this.adminQuoteService.findPendingQuotes();
+  }
+
   @Get(':id')
   async findQuote(@Param('id') id: number): Promise<Quote> {
     return await this.adminQuoteService.findQuote(id);
@@ -102,7 +107,7 @@ export class AdminQuoteController {
   async editQuote(
     @Param('id') id: number,
     @Body() adminEditQuoteDto: AdminEditQuoteDto,
-  ): Promise<UpdateResult> {
+  ): Promise<UpdateResult | DeleteResult> {
     return await this.adminQuoteService.editQuote(id, adminEditQuoteDto);
   }
 

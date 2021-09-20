@@ -6,6 +6,7 @@ import {
   Put,
   UseGuards,
   UseInterceptors,
+  Body,
 } from '@nestjs/common';
 import { AdminUserService } from './admin-user.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -13,6 +14,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
 import { RoleGuard } from '../../auth/guards/role.guard';
 import { User } from '../../entity/user/user.entity';
 import { UpdateResult } from 'typeorm';
+import { AdminEditUserDto } from './dto/admin-edit-user.dto';
 
 @Controller('admin/users')
 @ApiTags('Admin user endpoints')
@@ -33,7 +35,10 @@ export class AdminUserController {
   }
 
   @Put(':id')
-  async editUser(@Param('id') id: number): Promise<UpdateResult> {
-    return await this.adminUserService.changeRoleToAdmin(id);
+  async editUser(
+    @Param('id') id: number,
+    @Body() adminEditUserDto: AdminEditUserDto,
+  ): Promise<UpdateResult> {
+    return await this.adminUserService.editUser(id, adminEditUserDto);
   }
 }

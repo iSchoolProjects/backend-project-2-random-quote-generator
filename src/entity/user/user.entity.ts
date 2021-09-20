@@ -34,7 +34,7 @@ export class User {
   @Column()
   salt: string;
 
-  @Column({ default: 'user' })
+  @Column({ default: UserRole.USER })
   role: UserRole;
 
   @OneToMany(() => Quote, (quote) => quote.createdBy)
@@ -46,4 +46,7 @@ export class User {
 
   @Column({ default: 0 })
   passwordChangeCounter: number;
+
+  @Column({ default: true })
+  isEnabled: boolean;
 }
